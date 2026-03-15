@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0f0f12] text-zinc-100 min-h-screen antialiased font-sans;
+  }
+  #root {
+    @apply min-h-screen;
+  }
+  button {
+    @apply font-sans cursor-pointer;
+  }
+  input, textarea, select {
+    @apply font-sans;
+  }
+}
+
+.app-loading {
+  @apply flex items-center justify-center min-h-screen text-zinc-400;
+}
