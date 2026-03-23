@@ -14,14 +14,17 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
+// CORS configuration
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
 // Socket.IO for real-time updates (optional)
 const io = new Server(httpServer, {
-  cors: { origin: process.env.CLIENT_URL || 'http://localhost:5173' },
+  cors: { origin: CLIENT_URL, credentials: true },
 });
 setupSocketIO(io);
 
 // Middleware
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json());
 
 // Make io available to routes (e.g. for emitting on task changes)
