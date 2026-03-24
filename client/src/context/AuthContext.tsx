@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi } from '../api/client';
+import { authService } from '../services/auth.service';
 
 export interface User {
   id: string;
@@ -19,12 +20,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [user, setUser] = useState<User | null>(() => authService.getUser());
+  const [token, setToken] = useState<string | null>(() => authService.getToken());
   const [loading, setLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
-    const t = localStorage.getItem('token');
+    const t = authService.getToken();
     if (!t) {
       setLoading(false);
       return;
@@ -33,9 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = await authApi.me();
       setUser(data.user);
       setToken(t);
+      localStorage.setItem('user', JSON.stringify(data.user));
     } catch {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      authService.logout();
       setUser(null);
       setToken(null);
     } finally {
@@ -48,22 +49,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadUser]);
 
   const login = async (email: string, password: string) => {
-    const { data } = await authApi.login({ email, password });
-    localStorage.setItem('token', data.token);
+    const data = await authService.login(email, password);
     setToken(data.token);
     setUser(data.user);
   };
 
   const register = async (email: string, password: string, name: string) => {
-    const { data } = await authApi.register({ email, password, name });
-    localStorage.setItem('token', data.token);
+    const data = await authService.register(email, password, name);
     setToken(data.token);
     setUser(data.user);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    authService.logout();
     setUser(null);
     setToken(null);
   };
@@ -74,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
