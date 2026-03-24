@@ -17,7 +17,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    res.status(401).json({ message: 'Authentication required' });
+    res.status(401).json({ success: false, message: 'Authentication required' });
     return;
   }
 
@@ -26,6 +26,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
     (req as any).user = decoded;
     next();
   } catch {
-    res.status(401).json({ message: 'Invalid or expired token' });
+    res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 }
+

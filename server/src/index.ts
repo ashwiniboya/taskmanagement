@@ -1,34 +1,49 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
 
 import { connectDB } from './config/db';
 import authRoutes from './routes/auth.routes';
 import taskRoutes from './routes/task.routes';
 import { setupSocketIO } from './config/socket';
 
-dotenv.config();
-
 const app = express();
+
 const httpServer = createServer(app);
 
 // CORS configuration
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://taskmanagement-kohl-two.vercel.app'
+];
 
-// Socket.IO for real-time updates (optional)
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+app.use(express.json());
+
 const io = new Server(httpServer, {
-  cors: { origin: CLIENT_URL, credentials: true },
+  cors: { origin: ALLOWED_ORIGINS, credentials: true },
 });
 setupSocketIO(io);
 
-// Middleware
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
-app.use(express.json());
-
-// Make io available to routes (e.g. for emitting on task changes)
+// Make io available to routes
 app.set('io', io);
+
+
 
 // API routes
 app.use('/api/auth', authRoutes);

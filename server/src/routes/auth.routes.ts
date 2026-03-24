@@ -34,6 +34,7 @@ router.post('/register', async (req, res) => {
       user: { id: user._id, email: user.email, name: user.name },
     });
   } catch (err) {
+    console.error('Registration error:', err);
     res.status(500).json({ success: false, message: 'Registration Failed', error: (err as Error).message });
   }
 });
@@ -63,6 +64,7 @@ router.post('/login', async (req, res) => {
       user: { id: user._id, email: user.email, name: user.name },
     });
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ success: false, message: 'Login Failed', error: (err as Error).message });
   }
 });
@@ -77,10 +79,12 @@ router.get('/me', authMiddleware, async (req, res) => {
       res.status(404).json({ message: 'User not found' });
       return;
     }
-    res.json({ user: { id: user._id, email: user.email, name: user.name } });
+    res.json({ success: true, user: { id: user._id, email: user.email, name: user.name } });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to get user', error: (err as Error).message });
+    console.error('Me error:', err);
+    res.status(500).json({ success: false, message: 'Failed to get user', error: (err as Error).message });
   }
 });
+
 
 export default router;
